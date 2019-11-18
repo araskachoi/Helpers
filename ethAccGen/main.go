@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/urfave/cli"
-//	"github.com/whiteblock/araskachoi/Helpers"
-	"log"
 	"os"
+	"log"
+	"github.com/urfave/cli"
+	"github.com/araskachoi/Helpers/ethAccGen/generate"
 )
 
 func main() {
