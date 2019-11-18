@@ -17,14 +17,13 @@
 package generate
 
 import (
+	"fmt"
+	"strings"
 	"crypto/ecdsa"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/whiteblock/genesis/util"
-	"strings"
 )
 
 // Account represents an ethereum account
@@ -34,3 +33,81 @@ type Account struct {
 	Address    common.Address
 }
 
+// HexPrivateKey gets the private key in hex format
+func (acc Account) HexPrivateKey() string {
+	return hex.EncodeToString(crypto.FromECDSA(acc.PrivateKey))
+}
+
+// HexPublicKey gets the public key in hex format
+func (acc Account) HexPublicKey() string {
+	return hex.EncodeToString(crypto.FromECDSAPub(acc.PublicKey))[2:]
+}
+
+// HexAddress gets the address in hex format
+func (acc Account) HexAddress() string {
+	return strings.ToLower(acc.Address.Hex())
+}
+
+// NewAccount creates an account from a SECP256K1 ECDSA private key
+func NewAccount(privKey *ecdsa.PrivateKey) *Account {
+	pubKey := privKey.Public().(*ecdsa.PublicKey)
+	addr := crypto.PubkeyToAddress(*pubKey)
+	return &Account{PrivateKey: privKey, PublicKey: pubKey, Address: addr}
+}
+
+// GenerateEthereumAddress generates a new, random Ethereum account
+func GenerateEthereumAddress() (*Account, error) {
+	privKey, err := crypto.GenerateKey()
+	if err != nil {
+		return nil, error(err)
+	}
+	return NewAccount(privKey), nil
+}
+
+// GenerateAccounts is a convience function to generate an arbitrary number of accounts
+// using GenerateEthereumAddress
+func GenerateAccounts(accounts int) ([]*Account, error) {
+	out := []*Account{}
+	for i := 0; i < accounts; i++ {
+		acc, err := GenerateEthereumAddress()
+		if err != nil {
+			return nil, error(err)
+		}
+		out = append(out, acc)
+	}
+	return out, nil
+}
+
+// MarshalJSON handles the marshaling of Acount into JSON, so that
+// the fields are exposed in their hex encodings
+func (acc Account) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		PrivateKey string `json:"privateKey"`
+		PublicKey  string `json:"publicKey"`
+		Address    string `json:"address"`
+	}{
+		PrivateKey: acc.HexPrivateKey(),
+		PublicKey:  acc.HexPublicKey(),
+		Address:    acc.HexAddress(),
+	})
+}
+
+func Export(acc []*Account) (string, error) {
+	out := "{"
+	for i:=0;i<len(acc);i++ {
+		//fmt.Println(acc[i].HexPrivateKey(), acc[i].HexPublicKey(), acc[i].HexAddress())
+		account, err := acc[i].MarshalJSON()
+		if err != nil {
+			return "", error(err)
+		}
+		//fmt.Println(fmt.Sprintf("%s",account))
+		if i == len(acc)-1 {
+			out += fmt.Sprintf("%s", account)
+		} else {
+			out += fmt.Sprintf("%s", account) + ","
+		}
+	}
+	out += "}"
+	//fmt.Println(out)
+	return out, nil
+}
