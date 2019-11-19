@@ -6,8 +6,7 @@ WORKDIR /
 COPY . /ethAccGen
 WORKDIR ethAccGen
 #ENV GOBIN /go/bin
-#RUN go get -t -v ./...
-#RUN go build
-
+RUN go get -t -v ./...
+RUN go build
 
 ENTRYPOINT ["/bin/sh"]
