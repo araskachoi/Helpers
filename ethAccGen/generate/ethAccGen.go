@@ -94,7 +94,7 @@ func (acc Account) MarshalJSON() ([]byte, error) {
 
 func Export(acc []*Account) (string, error) {
 	out := "{"
-	for i:=0;i<len(acc);i++ {
+	for i := 0; i < len(acc); i++ {
 		//fmt.Println(acc[i].HexPrivateKey(), acc[i].HexPublicKey(), acc[i].HexAddress())
 		account, err := acc[i].MarshalJSON()
 		if err != nil {

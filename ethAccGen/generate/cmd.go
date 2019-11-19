@@ -13,23 +13,23 @@ var (
 		Usage:       "Command to generate ethereum accounts",
 		Description: `Creation of public key, private key, and account address`,
 		Action:      generateAccounts,
-		Flags: []cli.Flag{
-		},
+		Flags:       []cli.Flag{},
 	}
 )
 
-func generateAccounts(ctx *cli.Context) {
+func generateAccounts(ctx *cli.Context) error {
 	nodes, err := strconv.Atoi(os.Args[2])
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	acc, err := GenerateAccounts(nodes)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	out, err := Export(acc)
 	if err != nil {
-                fmt.Println(err)
+                return err
         }
 	fmt.Println(out)
+	return nil
 }
